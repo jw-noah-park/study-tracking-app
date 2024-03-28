@@ -1,0 +1,12 @@
+# Environment and editor-related files
+node_modules/
+.vscode/
+
+# Build or compiled files
+/build/
+/dist/
+/out/
+
+# Environment configuration files
+.env
+
