@@ -30,34 +30,98 @@ const SignUp: React.FC = () => {
     };
 
     return (
-        <div>
-            <h2>Sign Up</h2>
-            <form onSubmit={handleSignUp}>
-                <label>
-                    Email:
-                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <div className="min-h-screen flex items-center justify-center w-full bg-gray-100 dark:bg-gray-950">
+          <div className="bg-white dark:bg-gray-900 shadow-md rounded-lg px-8 py-6 max-w-md w-full">
+            <h2 className="text-2xl font-bold text-center mb-4 text-gray-800 dark:text-gray-200">Sign Up</h2>
+            <form onSubmit={handleSignUp} className="space-y-4">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-7">
+                  Email
                 </label>
-                <label>
-                    Phone Number:
-                    <input type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="mt-1 mb-2 block w-full shadow-md text-base border border-gray-300 py-2 px-3 rounded-md"
+                />
+              </div>
+              <div>
+                <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Phone Number
                 </label>
-                <label>
-                    First Name:
-                    <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                <input
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  type="tel"
+                  autoComplete="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  required
+                  className="mt-1 mb-2 block w-full shadow-md text-base border border-gray-300 py-2 px-3 rounded-md"
+                />
+              </div>
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  First Name
                 </label>
-                <label>
-                    Last Name:
-                    <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                <input
+                  id="firstName"
+                  name="firstName"
+                  type="text"
+                  autoComplete="given-name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                  className="mt-1 mb-2 block w-full shadow-md text-base border border-gray-300 py-2 px-3 rounded-md"
+                />
+              </div>
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Last Name
                 </label>
-                <label>
-                    Password:
-                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                <input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  autoComplete="family-name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                  className="mt-1 mb-2 block w-full shadow-md text-base border border-gray-300 py-2 px-3 rounded-md"
+                />
+              </div>
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Password
                 </label>
-                <button type="button" onClick = {handleSignUp}>Sign Up</button>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="mt-1 mb-2 block w-full shadow-md text-base border border-gray-300 py-2 px-3 rounded-md"
+                />
+              </div>
+              <button
+                type="submit"
+                className="mt-5 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Sign Up
+              </button>
             </form>
-            <p>Already have an account? <a href="/login">Login</a></p>
+            <p className="mt-4 text-sm text-center text-gray-600 dark:text-gray-300">
+              Already have an account? <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">Login</a>
+            </p>
+          </div>
         </div>
-    );
-};
+      );
+    }
 
 export default SignUp;
