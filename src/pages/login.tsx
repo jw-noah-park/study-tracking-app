@@ -25,7 +25,7 @@ const Login: React.FC = () => {
         const data = await response.json();
         const token = data.token;
         localStorage.setItem('token', token);
-        router.push('/memos');
+        router.push('/');
       } else {
         console.error('Login failed:', response.status); 
         console.error('Login failed');
@@ -81,7 +81,7 @@ const Login: React.FC = () => {
         Don't have an account? <a href="/signup" className="font-medium text-blue-600 hover:text-blue-500">Sign up</a>
       </p>
       <p className="mt-1 text-sm text-center text-gray-600 dark:text-gray-300">
-        Forgot your password? <a href="/reset-password" className="font-medium text-blue-600 hover:text-blue-500">Reset password</a>
+        Forgot your password? <a href="/forgotPassword" className="font-medium text-blue-600 hover:text-blue-500">Forgot password</a>
       </p>
     </div>
   </div>

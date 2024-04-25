@@ -22,10 +22,13 @@ const SignUp: React.FC = () => {
             if (response.ok) {
                 router.push('/login');
             } else {
+                const responseData = await response.json();
+                alert(responseData.error); 
                 console.error('Signup failed');
             }
         } catch (error) {
             console.error('Error signing up:', error);
+            alert('Failed to sign up. Please try again.');
         }
     };
 
