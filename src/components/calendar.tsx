@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Calendar from "react-calendar";
-import Modal from "../components/Modal"; 
+import Modal from "../components/modal"; 
 import "react-calendar/dist/Calendar.css";
 
 const CalendarComponent: React.FC = () => {
