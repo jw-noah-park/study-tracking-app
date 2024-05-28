@@ -10,3 +10,5 @@ node_modules/
 # Environment configuration files
 .env
 
+tracking-app/src/pages/api/sendEmailTest.js
+tracking-app/test/memos.test.js

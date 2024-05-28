@@ -1,53 +1,80 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-function ResetPassword({ token }) { // 이 컴포넌트는 token을 props로 받아와야 합니다.
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+function ResetPassword({ token }) {
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        if (password !== confirmPassword) {
-            alert('비밀번호가 일치하지 않습니다.');
-            return;
-        }
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (password !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
 
-        const response = await fetch('/api/resetPassword', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ token, password })
-        });
+    const response = await fetch("/api/resetPassword", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ token, password }),
+    });
 
-        if (response.ok) {
-            alert('비밀번호가 성공적으로 재설정되었습니다.');
-        } else {
-            alert('비밀번호 재설정에 실패했습니다.');
-        }
-    };
+    if (response.ok) {
+      alert("Password has been successfully reset.");
+    } else {
+      alert("Failed to reset password.");
+    }
+  };
 
-    return (
+  return (
+    <div className="min-h-screen flex items-center justify-center w-full bg-gray-100 dark:bg-gray-950">
+      <div className="bg-white dark:bg-gray-900 shadow-md rounded-lg px-8 py-6 max-w-md w-full">
+        <h2 className="text-2xl font-bold text-center mb-4 text-gray-800 dark:text-gray-200">
+          Reset Your Password
+        </h2>
         <form onSubmit={handleSubmit}>
-            <label htmlFor="password">새 비밀번호:</label>
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-7"
+            >
+              New Password
+            </label>
             <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="mt-1 mb-2 block w-full shadow-md text-base border border-gray-300 py-2 px-3 rounded-md"
             />
-            <label htmlFor="confirmPassword">비밀번호 확인:</label>
+          </div>
+          <div>
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-7"
+            >
+              Confirm Password
+            </label>
             <input
-                type="password"
-                id="confirmPassword"
-                value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
-                required
+              type="password"
+              id="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="mt-1 mb-2 block w-full shadow-md text-base border border-gray-300 py-2 px-3 rounded-md"
             />
-            <button type="submit">비밀번호 재설정</button>
+          </div>
+          <button
+            type="submit"
+            className="mt-5 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#f18701] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Reset Password
+          </button>
         </form>
-    );
+      </div>
+    </div>
+  );
 }
 
 export default ResetPassword;
-

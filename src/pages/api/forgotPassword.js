@@ -1,60 +1,69 @@
-import { Pool } from 'pg';
-import crypto from 'crypto';
-import nodemailer from 'nodemailer';
+import { Pool } from "pg";
+import crypto from "crypto";
+import nodemailer from "nodemailer";
 
 const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'postgres',
+  user: "postgres",
+  host: "localhost",
+  database: "postgres",
   password: process.env.DB_PASSWORD,
   port: 5432,
 });
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
 export default async function handler(req, res) {
-  if (req.method === 'POST') {
+  if (req.method === "POST") {
     const { email } = req.body;
 
     try {
-      const user = await pool.query('SELECT id FROM users WHERE email_address = $1', [email]);
+      const user = await pool.query(
+        "SELECT id FROM users WHERE email_address = $1",
+        [email]
+      );
       if (user.rows.length === 0) {
-        return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+        return res.status(404).json({ message: "User not found." });
       }
 
-      const token = crypto.randomBytes(20).toString('hex');
-      const expiry = Date.now() + 3600000; 
+      const token = crypto.randomBytes(20).toString("hex");
+      const expiry = Date.now() + 3600000;
 
-      await pool.query('INSERT INTO password_reset_tokens (user_id, token, expiry) VALUES ($1, $2, $3)', [user.rows[0].id, token, expiry]);
+      await pool.query(
+        "INSERT INTO password_reset_tokens (user_id, token, expiry) VALUES ($1, $2, $3)",
+        [user.rows[0].id, token, expiry]
+      );
 
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: email,
-        subject: 'Password Reset',
-        html: `<p>You requested for a password reset, kindly use this <a href="http://localhost:3000/resetPassword/${token}">link</a> to reset your password</p>`
+        subject: "Password Reset",
+        html: `<p>You requested a password reset, please use this <a href="http://localhost:3000/resetPassword/${token}">link</a> to reset your password</p>`,
       };
 
       transporter.sendMail(mailOptions, (err, info) => {
         if (err) {
-          console.error('Failed to send email:', err);
-          return res.status(500).json({ message: '이메일 발송에 실패했습니다.' });
+          console.error("Failed to send email:", err);
+          return res.status(500).json({ message: "Failed to send email." });
         } else {
-          res.status(200).json({ message: '비밀번호 재설정 링크를 이메일로 보냈습니다.' });
+          res
+            .status(200)
+            .json({
+              message: "Password reset link has been sent to your email.",
+            });
         }
       });
     } catch (error) {
-      console.error('Server error:', error);
-      res.status(500).json({ message: '서버 에러 발생' });
+      console.error("Server error:", error);
+      res.status(500).json({ message: "Server error occurred." });
     }
   } else {
-    res.setHeader('Allow', ['POST']);
+    res.setHeader("Allow", ["POST"]);
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }
-

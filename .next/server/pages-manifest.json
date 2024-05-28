@@ -1,1 +1,13 @@
-{}
+{
+  "/_app": "pages/_app.js",
+  "/_error": "pages/_error.js",
+  "/_document": "pages/_document.js",
+  "/": "pages/index.js",
+  "/api/login": "pages/api/login.js",
+  "/login": "pages/login.js",
+  "/api/memos": "pages/api/memos.js",
+  "/api/studySessionByDate": "pages/api/studySessionByDate.js",
+  "/signup": "pages/signup.js",
+  "/forgotPassword": "pages/forgotPassword.js",
+  "/api/studyHistory": "pages/api/studyHistory.js"
+}

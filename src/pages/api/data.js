@@ -1,3 +1,3 @@
-import handler from '../../api/data'; 
+import handler from "../../api/data";
 
-export default handler; 
+export default handler;
