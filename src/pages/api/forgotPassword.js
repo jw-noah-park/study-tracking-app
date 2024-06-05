@@ -2,12 +2,15 @@ import { Pool } from "pg";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 
+dotenv.config(); 
+
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT || 5432,
+  ssl: { rejectUnauthorized: true } 
 });
 
 const transporter = nodemailer.createTransport({
