@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const ResetPassword = () => {
   const router = useRouter();
@@ -7,6 +8,8 @@ const ResetPassword = () => {
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -31,6 +34,15 @@ const ResetPassword = () => {
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setConfirmPasswordVisible(!confirmPasswordVisible);
+  };
+
+
   return (
     <div className="min-h-screen flex items-center justify-center w-full bg-gray-100 dark:bg-gray-950">
       <div className="bg-white dark:bg-gray-900 shadow-md rounded-lg px-8 py-6 max-w-md w-full">
@@ -38,7 +50,7 @@ const ResetPassword = () => {
           Reset Your Password
         </h2>
         <form onSubmit={handleSubmit}>
-          <div>
+        <div className="relative">
             <label
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-7"
@@ -46,15 +58,26 @@ const ResetPassword = () => {
               New Password
             </label>
             <input
-              type="password"
+              type={passwordVisible ? "text" : "password"}
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               className="mt-1 mb-2 block w-full shadow-md text-base border border-gray-300 py-2 px-3 rounded-md"
             />
+            <button
+              type="button"
+              onClick={togglePasswordVisibility}
+              className="mt-6 absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+            >
+              {passwordVisible ? (
+                <FaEyeSlash className="h-5 w-5 text-gray-500" />
+              ) : (
+                <FaEye className="h-5 w-5 text-gray-500" />
+              )}
+            </button>
           </div>
-          <div>
+          <div className="relative">
             <label
               htmlFor="confirmPassword"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-7"
@@ -62,13 +85,24 @@ const ResetPassword = () => {
               Confirm Password
             </label>
             <input
-              type="password"
+              type={confirmPasswordVisible ? "text" : "password"}
               id="confirmPassword"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               className="mt-1 mb-2 block w-full shadow-md text-base border border-gray-300 py-2 px-3 rounded-md"
             />
+            <button
+              type="button"
+              onClick={toggleConfirmPasswordVisibility}
+              className="mt-6 absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+            >
+              {confirmPasswordVisible ? (
+                <FaEyeSlash className="h-5 w-5 text-gray-500" />
+              ) : (
+                <FaEye className="h-5 w-5 text-gray-500" />
+              )}
+            </button>
           </div>
           <button
             type="submit"

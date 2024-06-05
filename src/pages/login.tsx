@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
   const router = useRouter();
 
   const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -33,6 +35,10 @@ const Login: React.FC = () => {
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center w-full bg-gray-100 dark:bg-gray-950">
       <div className="bg-white dark:bg-gray-900 shadow-md rounded-lg px-8 py-6 max-w-md w-full">
@@ -58,7 +64,7 @@ const Login: React.FC = () => {
               className="mt-1 mb-2 block w-full shadow-md text-base border border-gray-300 py-2 px-3 rounded-md"
             />
           </div>
-          <div>
+          <div className="relative">
             <label
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -68,13 +74,24 @@ const Login: React.FC = () => {
             <input
               id="password"
               name="password"
-              type="password"
+              type={passwordVisible ? "text" : "password"}
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               className="mt-1 block w-full shadow-md text-base border border-gray-300 py-2 px-3 rounded-md"
             />
+            <button
+              type="button"
+              onClick={togglePasswordVisibility}
+              className="mt-6 absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+            >
+              {passwordVisible ? (
+                <FaEyeSlash className="h-5 w-5 text-gray-500" />
+              ) : (
+                <FaEye className="h-5 w-5 text-gray-500" />
+              )}
+            </button>
           </div>
           <button
             type="submit"

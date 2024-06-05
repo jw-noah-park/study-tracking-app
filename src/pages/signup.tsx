@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const SignUp: React.FC = () => {
   const [email, setEmail] = useState<string>("");
@@ -7,6 +8,7 @@ const SignUp: React.FC = () => {
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
   const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const router = useRouter();
@@ -44,6 +46,10 @@ const SignUp: React.FC = () => {
       console.error("Error signing up:", error);
       setError("Failed to sign up. Please try again.");
     }
+  };
+
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
   };
 
   return (
@@ -129,7 +135,7 @@ const SignUp: React.FC = () => {
               className="mt-1 mb-2 block w-full shadow-md text-base border border-gray-300 py-2 px-3 rounded-md"
             />
           </div>
-          <div>
+          <div className="relative">
             <label
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -139,7 +145,7 @@ const SignUp: React.FC = () => {
             <input
               id="password"
               name="password"
-              type="password"
+              type={passwordVisible ? "text" : "password"}
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -147,6 +153,17 @@ const SignUp: React.FC = () => {
               placeholder="Enter your password"
               className="mt-1 mb-2 block w-full shadow-md text-base border border-gray-300 py-2 px-3 rounded-md"
             />
+            <button
+              type="button"
+              onClick={togglePasswordVisibility}
+              className="mt-6 absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+            >
+              {passwordVisible ? (
+                <FaEyeSlash className="h-5 w-5 text-gray-500" />
+              ) : (
+                <FaEye className="h-5 w-5 text-gray-500" />
+              )}
+            </button>
           </div>
           {error && (
             <p className="text-red-500 text-center text-sm mb-4">{error}</p>

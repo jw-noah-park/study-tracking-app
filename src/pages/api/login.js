@@ -1,9 +1,10 @@
 import { Pool } from "pg";
 import jwt from "jsonwebtoken";
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
+import bcrypt from "bcrypt";
 
 dotenv.config();
-// const isProduction = process.env.NODE_ENV === 'production';
+// const isProduction = process.env.NODE_ENV === "production";
 
 const pool = new Pool({
   user: process.env.DB_USER,
@@ -11,29 +12,40 @@ const pool = new Pool({
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT || 5432,
-  // ssl: isProduction ? { rejectUnauthorized: true } : { rejectUnauthorized: false }
+  // ssl: isProduction
+  //   ? { rejectUnauthorized: true }
+  //   : { rejectUnauthorized: false },
   ssl: { rejectUnauthorized: false }
 });
 
+const SECRET_KEY = process.env.SECRET_KEY;
+
 export default async function handler(req, res) {
-  console.log("Handler function called."); 
+  console.log("Handler function called.");
   if (req.method === "POST") {
     const { email, password } = req.body;
-    console.log("Email:", email); 
+    console.log("Email:", email);
 
     try {
-      const query =
-        "SELECT * FROM users WHERE email_address = $1 AND password = $2";
-      const result = await pool.query(query, [email, password]);
-      console.log("Query result:", result.rows); 
+      const query = "SELECT * FROM users WHERE email_address = $1";
+      const result = await pool.query(query, [email]);
+      console.log("Query result:", result.rows);
 
       if (result.rows.length > 0) {
-        const token = jwt.sign(
-          { userId: result.rows[0].id },
-          process.env.SECRET_KEY,
-        );
+        const user = result.rows[0];
+        const passwordMatch = await bcrypt.compare(password, user.password);
 
-        res.status(200).json({ token });
+        if (passwordMatch) {
+          const token = jwt.sign(
+            { userId: user.id },
+            SECRET_KEY,
+            { expiresIn: '1h' }
+          );
+
+          res.status(200).json({ token });
+        } else {
+          res.status(401).json({ error: "Invalid credentials" });
+        }
       } else {
         res.status(401).json({ error: "Invalid credentials" });
       }

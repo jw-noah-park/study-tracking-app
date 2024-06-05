@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Calendar from "react-calendar";
-import Modal from "../components/modal"; 
+import Modal from "../components/modal";
 import "react-calendar/dist/Calendar.css";
 
 const CalendarComponent: React.FC = () => {
@@ -165,8 +165,7 @@ const CalendarComponent: React.FC = () => {
                   <strong>End Time:</strong> {formatDateTime(session.end_time)}
                 </p>
                 <p>
-                  <strong>Duration:</strong>{" "}
-                  {formatDuration(session.duration.seconds)}
+                  <strong>Duration:</strong> {formatDuration(session.duration)}
                 </p>
               </li>
             ))}

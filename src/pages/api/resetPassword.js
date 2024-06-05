@@ -29,11 +29,11 @@ export default async function handler(req, res) {
 
       const userId = rows[0].user_id;
 
-      const salt = bcrypt.genSaltSync(10);
-      const hashedPassword = bcrypt.hashSync(password, salt);
+      const saltRounds = 10;
+      const hashedPassword = bcrypt.hashSync(password, saltRounds);
 
       const updateQuery = "UPDATE users SET password = $1 WHERE id = $2";
-      await pool.query(updateQuery, [password, userId]);
+      await pool.query(updateQuery, [hashedPassword, userId]);
 
       const deleteTokenQuery =
         "DELETE FROM password_reset_tokens WHERE token = $1";

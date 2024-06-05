@@ -1,9 +1,9 @@
 import { Pool } from "pg";
 import jwt from "jsonwebtoken";
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 
-dotenv.config(); 
-// const isProduction = process.env.NODE_ENV === 'production';
+dotenv.config();
+// const isProduction = process.env.NODE_ENV === "production";
 
 const pool = new Pool({
   user: process.env.DB_USER,
@@ -11,7 +11,9 @@ const pool = new Pool({
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT || 5432,
-  // ssl: isProduction ? { rejectUnauthorized: true } : { rejectUnauthorized: false }
+  // ssl: isProduction
+  //   ? { rejectUnauthorized: true }
+  //   : { rejectUnauthorized: false },
   ssl: { rejectUnauthorized: false }
 });
 
@@ -36,7 +38,8 @@ export default async function handler(req, res) {
 
     const query = `
       SELECT 
-        topic, description, start_time, end_time, duration
+      topic, description, start_time, end_time,
+      EXTRACT(EPOCH FROM (end_time - start_time)) AS duration
       FROM 
         study_session
       WHERE 
