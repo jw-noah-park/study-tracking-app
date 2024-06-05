@@ -2,7 +2,11 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/forgotPassword": "pages/forgotPassword.js",
   "/login": "pages/login.js",
-  "/": "pages/index.js"
+  "/forgotPassword": "pages/forgotPassword.js",
+  "/": "pages/index.js",
+  "/api/memos": "pages/api/memos.js",
+  "/api/login": "pages/api/login.js",
+  "/api/studySessionByDate": "pages/api/studySessionByDate.js",
+  "/api/studyHistory": "pages/api/studyHistory.js"
 }

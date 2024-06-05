@@ -137,45 +137,47 @@ const CalendarComponent: React.FC = () => {
         locale="en-US"
         tileContent={tileContent}
       />
-
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <h2 className="text-xl font-bold mb-4">
+ <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+      <div className="max-w-lg mx-auto p-4 bg-white dark:bg-gray-900 rounded-lg shadow-lg">
+        <h2 className="text-center text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
           Study Sessions for {selectedDate}
         </h2>
         {sessions.length === 0 ? (
-          <p>No sessions available for this date</p>
+          <p className="text-gray-700 dark:text-gray-300">No sessions available for this date</p>
         ) : (
           <ul className="space-y-4">
             {sessions.map((session, index) => (
               <li
                 key={index}
-                className="bg-white dark:bg-gray-800 p-4 rounded-md shadow-md"
+                className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md shadow-md border border-gray-200 dark:border-gray-700"
               >
-                <p>
-                  <strong>Topic:</strong> {session.topic}
+                <p className="text-gray-700 dark:text-gray-300">
+                  <span className="font-semibold text-gray-800 dark:text-gray-100">Topic:</span> {session.topic}
                 </p>
-                <p>
-                  <strong>Description:</strong> {session.description}
+                <p className="text-gray-700 dark:text-gray-300">
+                  <span className="font-semibold text-gray-800 dark:text-gray-100">Description:</span> {session.description}
                 </p>
-                <p>
-                  <strong>Start Time:</strong>{" "}
-                  {formatDateTime(session.start_time)}
+                <p className="text-gray-700 dark:text-gray-300">
+                  <span className="font-semibold text-gray-800 dark:text-gray-100">Start Time:</span> {formatDateTime(session.start_time)}
                 </p>
-                <p>
-                  <strong>End Time:</strong> {formatDateTime(session.end_time)}
+                <p className="text-gray-700 dark:text-gray-300">
+                  <span className="font-semibold text-gray-800 dark:text-gray-100">End Time:</span> {formatDateTime(session.end_time)}
                 </p>
-                <p>
-                  <strong>Duration:</strong> {formatDuration(session.duration)}
+                <p className="text-gray-700 dark:text-gray-300">
+                  <span className="font-semibold text-gray-800 dark:text-gray-100">Duration:</span> {formatDuration(session.duration)}
                 </p>
               </li>
             ))}
           </ul>
         )}
-      </Modal>
+      </div>
+    </Modal>
 
       <div className="flex flex-col items-center mt-4">
-        <h3 className="text-lg font-bold mb-2 text-xs">Time Duration Legend</h3>
-        <div className="flex space-x-4 text-xs">
+        <h3 className="text-lg font-bold mb-2 text-xs md:text-lg">
+          Time Duration Legend
+        </h3>
+        <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-4 sm:space-y-0 text-xs">
           <div className="flex items-center">
             <div className="w-2 h-2 bg-gray-500 mr-2"></div>
             <span>Less than 1 hour</span>
