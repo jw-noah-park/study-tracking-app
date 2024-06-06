@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import Modal from "react-modal";
 
 interface Memo {
   id: number;
@@ -10,6 +11,8 @@ interface Memo {
 const MemosComponent: React.FC = () => {
   const [content, setContent] = useState<string>("");
   const [memos, setMemos] = useState<Memo[]>([]);
+  const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
+  const [modalMessage, setModalMessage] = useState<string>("");
 
   useEffect(() => {
     const fetchMemos = async () => {
@@ -52,13 +55,13 @@ const MemosComponent: React.FC = () => {
         const newMemo = await response.json();
         setMemos([...memos, newMemo]);
         setContent("");
-        alert("Memo added successfully");
+        openModal("Memo added successfully");
       } else {
         throw new Error("Failed to add memo");
       }
     } catch (error) {
       console.error("Error adding memo:", error);
-      alert("Failed to add memo");
+      openModal("Failed to add memo");
     }
   };
 
@@ -75,18 +78,48 @@ const MemosComponent: React.FC = () => {
 
       if (response.ok) {
         setMemos(memos.filter((memo) => memo.id !== id));
-        alert("Memo deleted successfully");
+        openModal("Memo deleted successfully");
       } else {
         throw new Error("Failed to delete memo");
       }
     } catch (error) {
       console.error("Error deleting memo:", error);
-      alert("Failed to delete memo");
+      openModal("Failed to delete memo");
     }
+  };
+
+  const openModal = (message: string) => {
+    setModalMessage(message);
+    setModalIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalIsOpen(false);
   };
 
   return (
     <div className="container mx-auto px-2 py-4">
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeModal}
+        contentLabel="Message"
+        className="fixed inset-0 flex items-center justify-center z-50"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50"
+      >
+        <div className="bg-white rounded-lg p-6 shadow-lg max-w-md mx-auto">
+          <h2 className="text-lg font-bold mb-4 text-gray-800">Notification</h2>
+          <p className="mb-4 text-gray-600">{modalMessage}</p>
+          <div className="flex justify-center">
+            <button
+              onClick={closeModal}
+              className="bg-[#f18701] text-white px-2 py-1 rounded-lg hover:bg-[#d97300] transition duration-200 text-center"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </Modal>
+
       <div className="flex-1">
         <div className="mb-4">
           <form
