@@ -1,14 +1,24 @@
-# Environment and editor-related files
+# Dependencies
 node_modules/
-.vscode/
 
-# Build or compiled files
+# Next.js
+.next/
+out/
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+
+# Editor / OS
+.vscode/
+.DS_Store
+
+# Build
 /build/
 /dist/
-/out/
 
-# Environment configuration files
-.env
-
+# Test / temp
 src/pages/api/sendEmailTest.js
 test/memos.test.js
