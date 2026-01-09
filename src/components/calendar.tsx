@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Calendar from "react-calendar";
 import Modal from "../components/modal";
 import "react-calendar/dist/Calendar.css";
+import { Box, Typography, Stack, Chip, Divider } from "@mui/material";
 
 const CalendarComponent: React.FC = () => {
   const [date, setDate] = useState<Date>(new Date());
@@ -130,84 +131,71 @@ const CalendarComponent: React.FC = () => {
   };
 
   return (
-    <div className="p-4 m-2 rounded-lg flex flex-col justify-center items-center dark:bg-gray-900">
-      <Calendar
-        onChange={onChange}
-        value={date}
-        locale="en-US"
-        tileContent={tileContent}
-      />
- <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-      <div className="max-w-lg mx-auto p-4 bg-white dark:bg-gray-900 rounded-lg shadow-lg">
-        <h2 className="text-center text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
-          Study Sessions for {selectedDate}
-        </h2>
-        {sessions.length === 0 ? (
-          <p className="text-gray-700 dark:text-gray-300">No sessions available for this date</p>
-        ) : (
-          <ul className="space-y-4">
-            {sessions.map((session, index) => (
-              <li
-                key={index}
-                className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md shadow-md border border-gray-200 dark:border-gray-700"
-              >
-                <p className="text-gray-700 dark:text-gray-300">
-                  <span className="font-semibold text-gray-800 dark:text-gray-100">Topic:</span> {session.topic}
-                </p>
-                <p className="text-gray-700 dark:text-gray-300">
-                  <span className="font-semibold text-gray-800 dark:text-gray-100">Description:</span> {session.description}
-                </p>
-                <p className="text-gray-700 dark:text-gray-300">
-                  <span className="font-semibold text-gray-800 dark:text-gray-100">Start Time:</span> {formatDateTime(session.start_time)}
-                </p>
-                <p className="text-gray-700 dark:text-gray-300">
-                  <span className="font-semibold text-gray-800 dark:text-gray-100">End Time:</span> {formatDateTime(session.end_time)}
-                </p>
-                <p className="text-gray-700 dark:text-gray-300">
-                  <span className="font-semibold text-gray-800 dark:text-gray-100">Duration:</span> {formatDuration(session.duration)}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </Modal>
+    <Box>
+      <Box sx={{ display: "flex", justifyContent: "center" }}>
+        <Calendar
+          onChange={onChange}
+          value={date}
+          locale="en-US"
+          tileContent={tileContent}
+        />
+      </Box>
 
-      <div className="flex flex-col items-center mt-4">
-        <h3 className="text-lg font-bold mb-2 text-xs md:text-lg">
-          Time Duration Legend
-        </h3>
-        <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-4 sm:space-y-0 text-xs">
-          <div className="flex items-center">
-            <div className="w-2 h-2 bg-gray-500 mr-2"></div>
-            <span>Less than 1 hour</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-2 h-2 bg-green-500 mr-2"></div>
-            <span>1 to 5 hours</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-2 h-2 bg-orange-500 mr-2"></div>
-            <span>5 to 8 hours</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-2 h-2 bg-red-600 mr-2"></div>
-            <span>More than 8 hours</span>
-          </div>
-        </div>
-      </div>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={`Study Sessions — ${selectedDate || ""}`}
+      >
+        {sessions.length === 0 ? (
+          <Typography>No sessions available for this date</Typography>
+        ) : (
+          <Stack spacing={2}>
+            {sessions.map((s, idx) => (
+              <Box
+                key={idx}
+                sx={{
+                  border: "1px solid #e5e7eb",
+                  borderRadius: 2,
+                  p: 2,
+                  bgcolor: "#fff",
+                }}
+              >
+                <Typography sx={{ fontWeight: 800 }}>Topic</Typography>
+                <Typography sx={{ mb: 1 }}>{s.topic}</Typography>
+
+                <Typography sx={{ fontWeight: 800 }}>Description</Typography>
+                <Typography sx={{ mb: 1 }}>{s.description}</Typography>
+
+                <Divider sx={{ my: 1 }} />
+
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                  <Chip size="small" label={`Start: ${formatDateTime(s.start_time)}`} />
+                  <Chip size="small" label={`End: ${formatDateTime(s.end_time)}`} />
+                  <Chip size="small" label={`Duration: ${formatDuration(s.duration)}`} />
+                </Stack>
+              </Box>
+            ))}
+          </Stack>
+        )}
+      </Modal>
+
+      {/* Legend */}
+      <Box sx={{ mt: 3 }}>
+        <Typography sx={{ fontWeight: 900, mb: 1 }}>Time Duration Legend</Typography>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+          <Chip size="small" label="Less than 1 hour" sx={{ bgcolor: "#e5e7eb" }} />
+          <Chip size="small" label="1 to 5 hours" sx={{ bgcolor: "#dcfce7" }} />
+          <Chip size="small" label="5 to 8 hours" sx={{ bgcolor: "#ffedd5" }} />
+          <Chip size="small" label="More than 8 hours" sx={{ bgcolor: "#fee2e2" }} />
+        </Stack>
+      </Box>
 
       <style jsx>{`
         .react-calendar__tile {
           position: relative;
         }
-        .react-calendar__tile div {
-          position: absolute;
-          bottom: 0;
-          right: 0;
-        }
       `}</style>
-    </div>
+    </Box>
   );
 };
 
