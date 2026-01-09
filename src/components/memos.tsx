@@ -1,28 +1,40 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import Modal from "react-modal";
 
-interface Memo {
-  id: number;
-  content: string;
-}
+import {
+  Box,
+  Stack,
+  Typography,
+  TextField,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from "@mui/material";
 
-const MemosComponent: React.FC = () => {
-  const [content, setContent] = useState<string>("");
-  const [memos, setMemos] = useState<Memo[]>([]);
-  const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
-  const [modalMessage, setModalMessage] = useState<string>("");
+export default function MemosComponent() {
+  const [content, setContent] = useState("");
+  const [memos, setMemos] = useState([]);
+
+  const [open, setOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   useEffect(() => {
     const fetchMemos = async () => {
       try {
         const token = localStorage.getItem("token");
+        if (!token) return;
+
         const response = await fetch("/api/memos", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
+
         if (response.ok) {
           const data = await response.json();
           setMemos(data);
@@ -37,11 +49,17 @@ const MemosComponent: React.FC = () => {
     fetchMemos();
   }, []);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const openModal = (msg) => {
+    setModalMessage(msg);
+    setOpen(true);
+  };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
       const token = localStorage.getItem("token");
+      if (!token) return openModal("Please login first.");
+
       const response = await fetch("/api/memos", {
         method: "POST",
         headers: {
@@ -53,7 +71,7 @@ const MemosComponent: React.FC = () => {
 
       if (response.ok) {
         const newMemo = await response.json();
-        setMemos([...memos, newMemo]);
+        setMemos((prev) => [...prev, newMemo]);
         setContent("");
         openModal("Memo added successfully");
       } else {
@@ -65,19 +83,18 @@ const MemosComponent: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      console.log("Deleting memo with id:", id);
+      if (!token) return openModal("Please login first.");
+
       const response = await fetch(`/api/memos?id=${id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {
-        setMemos(memos.filter((memo) => memo.id !== id));
+        setMemos((prev) => prev.filter((m) => m.id !== id));
         openModal("Memo deleted successfully");
       } else {
         throw new Error("Failed to delete memo");
@@ -88,95 +105,55 @@ const MemosComponent: React.FC = () => {
     }
   };
 
-  const openModal = (message: string) => {
-    setModalMessage(message);
-    setModalIsOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalIsOpen(false);
-  };
-
   return (
-    <div className="container mx-auto px-2 py-4">
-      <Modal
-        isOpen={modalIsOpen}
-        onRequestClose={closeModal}
-        contentLabel="Message"
-        className="fixed inset-0 flex items-center justify-center z-50"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-50"
-      >
-        <div className="bg-white rounded-lg p-6 shadow-lg max-w-md mx-auto">
-          <h2 className="text-lg font-bold mb-4 text-gray-800">Notification</h2>
-          <p className="mb-4 text-gray-600">{modalMessage}</p>
-          <div className="flex justify-center">
-            <button
-              onClick={closeModal}
-              className="bg-[#f18701] text-white px-2 py-1 rounded-lg hover:bg-[#d97300] transition duration-200 text-center"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </Modal>
+    <Box>
+      <Stack component="form" onSubmit={handleSubmit} direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+        <TextField
+          fullWidth
+          size="small"
+          placeholder="+ Add a memo"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+        />
+        <IconButton type="submit" sx={{ bgcolor: "#f97316", color: "#fff", "&:hover": { bgcolor: "#ea580c" } }}>
+          <FontAwesomeIcon icon={faPlus} />
+        </IconButton>
+      </Stack>
 
-      <div className="flex-1">
-        <div className="mb-4">
-          <form
-            onSubmit={handleSubmit}
-            className="flex items-center bg-white p-4 border border-gray-300 rounded-lg"
+      <Typography sx={{ fontWeight: 900, mb: 1, color: "#111827" }}>
+        Memos
+      </Typography>
+
+      <List sx={{ border: "1px solid #e5e7eb", borderRadius: 2, bgcolor: "#fff" }}>
+        {memos.map((memo) => (
+          <ListItem
+            key={memo.id}
+            secondaryAction={
+              <Button color="error" size="small" onClick={() => handleDelete(memo.id)}>
+                Delete
+              </Button>
+            }
+            sx={{ borderBottom: "1px solid #f3f4f6" }}
           >
-            <label className="flex-grow flex items-center text-sm">
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="+ Add a memo"
-                className="flex-grow px-4 py-2 text-sm outline-none h-9"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              />
-              <div className="ml-2">
-                <button
-                  type="submit"
-                  className="bg-[#f18701] text-white px-4 py-2 rounded"
-                >
-                  <FontAwesomeIcon icon={faPlus} />
-                </button>
-              </div>
-            </label>
-          </form>
-        </div>
+            <ListItemText primary={memo.content} />
+          </ListItem>
+        ))}
+        {memos.length === 0 && (
+          <ListItem>
+            <ListItemText primary="No memos yet." />
+          </ListItem>
+        )}
+      </List>
 
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold mb-2 text-gray-700">Memos</h2>
-          <hr className="border-gray-300 mb-3" />
-          <ul className="space-y-2">
-            {memos.map((memo) => (
-              <li
-                key={memo.id}
-                className="bg-white rounded-md p-2 flex items-center justify-between shadow-sm dark:bg-gray-800 dark:border-gray-700"
-              >
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm dark:text-gray-200">
-                    {memo.content}
-                  </span>
-                </div>
-                <button
-                  onClick={() => handleDelete(memo.id)}
-                  className="text-red-500 hover:text-red-600 text-sm"
-                >
-                  Delete
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </div>
+      <Dialog open={open} onClose={() => setOpen(false)}>
+        <DialogTitle sx={{ fontWeight: 900 }}>Notification</DialogTitle>
+        <DialogContent>{modalMessage}</DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)} variant="contained">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
-};
-
-export default MemosComponent;
+}
