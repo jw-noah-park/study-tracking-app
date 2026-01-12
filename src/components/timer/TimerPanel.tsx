@@ -9,7 +9,11 @@ import {
   Divider,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlay, faStop, faRotateRight } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPlay,
+  faStop,
+  faRotateRight,
+} from "@fortawesome/free-solid-svg-icons";
 import { useStudySessionTimerContext } from "../../context/StudySessionTimerContext";
 
 export default function TimerPanel() {
@@ -155,7 +159,11 @@ export default function TimerPanel() {
             Duration: {sessionData.duration}
           </Typography>
 
-          <Button onClick={timer.reset} variant="outlined" sx={{ fontWeight: 800 }}>
+          <Button
+            onClick={timer.reset}
+            variant="outlined"
+            sx={{ fontWeight: 800 }}
+          >
             Add New Session
           </Button>
         </Box>

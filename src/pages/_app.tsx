@@ -80,9 +80,11 @@ const theme = createTheme({
 
 export default function App({ Component, pageProps }) {
   return (
-    <StudySessionTimerProvider options={{
+    <StudySessionTimerProvider
+      options={{
         saveEndpoint: "/api/studySession",
-      }}>
+      }}
+    >
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Component {...pageProps} />

@@ -140,35 +140,34 @@ export default function Sidebar({
 
                   {/* ✅ Timer 옆에만 running time 표시 */}
                   {item.view === "timer" && timer.sessionActive && (
-  <Stack direction="row" alignItems="center" spacing={0.75}>
-    <Chip
-      size="small"
-      label={timer.elapsedFormatted}
-      sx={{
-        height: 22,
-        fontSize: 12,
-        fontWeight: 800,
-      }}
-    />
+                    <Stack direction="row" alignItems="center" spacing={0.75}>
+                      <Chip
+                        size="small"
+                        label={timer.elapsedFormatted}
+                        sx={{
+                          height: 22,
+                          fontSize: 12,
+                          fontWeight: 800,
+                        }}
+                      />
 
-    <IconButton
-      size="small"
-      onClick={(e) => {
-        e.stopPropagation(); // ✅ Timer 메뉴 클릭(start) 이벤트 방지
-        timer.endSession();  // ✅ 멈추기(세션 종료 + 저장)
-      }}
-      sx={{
-        p: 0.25,
-        color: "text.secondary",
-        "&:hover": { color: "error.main" },
-      }}
-      title="Stop"
-    >
-      <StopRoundedIcon fontSize="small" />
-    </IconButton>
-  </Stack>
-)}
-
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation(); // ✅ Timer 메뉴 클릭(start) 이벤트 방지
+                          timer.endSession(); // ✅ 멈추기(세션 종료 + 저장)
+                        }}
+                        sx={{
+                          p: 0.25,
+                          color: "text.secondary",
+                          "&:hover": { color: "error.main" },
+                        }}
+                        title="Stop"
+                      >
+                        <StopRoundedIcon fontSize="small" />
+                      </IconButton>
+                    </Stack>
+                  )}
                 </Box>
               </ListItemButton>
             );
