@@ -1,20 +1,23 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import CalendarComponent from "../components/calendar";
-import MemosComponent from "../components/memos";
-import StudySession from "../components/studySession";
+import Memos from "../components/memos";
+import TimerPanel from "../components/timer/TimerPanel";
+import TimerHistoryPanel from "../components/timer/TimerHistory";
 import { Box, Container, Stack } from "@mui/material";
 import Sidebar from "../components/layout/Sidebar";
 import DashboardCard from "../components/layout/DashboardCard";
+
+type View = "home" | "timer" | "todo";
+
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [activeView, setActiveView] = useState<View>("home");
   const router = useRouter();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
-      setIsLoggedIn(true);
-    }
+    if (token) setIsLoggedIn(true);
   }, []);
 
   const handleLogout = () => {
@@ -33,23 +36,33 @@ export default function Home() {
         isLoggedIn={isLoggedIn}
         onLogin={handleLogin}
         onLogout={handleLogout}
+        activeView={activeView}
+        onSelectView={setActiveView}
       />
 
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Container maxWidth="xl" sx={{ py: 3 }}>
           {/* Top row */}
           <Stack direction={{ xs: "column", lg: "row" }} spacing={2.5}>
-            {/* Calendar (main) */}
+            {/* Calendar */}
             <Box sx={{ flex: { lg: 7 }, minWidth: 0 }}>
               <DashboardCard title="Calendar">
                 <CalendarComponent />
               </DashboardCard>
             </Box>
 
-            {/* Timer (side) */}
+            {/* Right panel */}
             <Box sx={{ flex: { lg: 3 }, minWidth: 0 }}>
-              <DashboardCard title="Timer" sx={{ height: "100%" }}>
-                <StudySession />
+              <DashboardCard sx={{ height: "100%" }}>
+                {activeView === "timer" ? (
+                  <TimerPanel /> // ✅ Timer 눌렀을 때: 타이머 컨트롤 UI
+                ) : activeView === "todo" ? (
+                  <Box sx={{ color: "text.secondary", fontSize: 14 }}>
+                    TODO panel coming soon.
+                  </Box> // ✅ TO-DO: 일단 아무것도 안함
+                ) : (
+                  <TimerHistoryPanel /> // ✅ 기본(Home): 히스토리 보여주기
+                )}
               </DashboardCard>
             </Box>
           </Stack>
@@ -62,15 +75,13 @@ export default function Home() {
           >
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <DashboardCard title="Memos">
-                <MemosComponent />
+                <Memos />
               </DashboardCard>
             </Box>
 
             <Box sx={{ width: { xs: "100%", lg: 360 }, flexShrink: 0 }}>
               <DashboardCard title="Notes">
-                <Box sx={{ color: "rgba(255,255,255,0.70)", fontSize: 14 }}>
-                  You can add a “Recent sessions” widget here later.
-                </Box>
+                You can add a “Recent sessions” widget here later.
               </DashboardCard>
             </Box>
           </Stack>

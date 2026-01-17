@@ -8,21 +8,49 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
+  Chip,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-
+import { useStudySessionTimerContext } from "../../context/StudySessionTimerContext";
+import IconButton from "@mui/material/IconButton";
+import StopRoundedIcon from "@mui/icons-material/StopRounded";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import SchoolRoundedIcon from "@mui/icons-material/SchoolRounded";
 import BookmarkRoundedIcon from "@mui/icons-material/BookmarkRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 
 const navItems = [
-  { label: "Home", icon: <HomeRoundedIcon /> },
-  { label: "Timer", icon: <SchoolRoundedIcon /> },
-  { label: "TO-DO", icon: <BookmarkRoundedIcon /> },
-];
+  { label: "Home", icon: <HomeRoundedIcon />, view: "home" },
+  { label: "Timer", icon: <SchoolRoundedIcon />, view: "timer" },
+  { label: "TO-DO", icon: <BookmarkRoundedIcon />, view: "todo" },
+] as const;
 
-export default function Sidebar({ isLoggedIn, onLogin, onLogout }) {
+type View = (typeof navItems)[number]["view"];
+
+export default function Sidebar({
+  isLoggedIn,
+  onLogin,
+  onLogout,
+  activeView,
+  onSelectView,
+}: {
+  isLoggedIn: boolean;
+  onLogin: () => void;
+  onLogout: () => void;
+  activeView: View;
+  onSelectView: (view: View) => void;
+}) {
+  const timer = useStudySessionTimerContext();
+
+  const handleNavClick = (view: View) => {
+    onSelectView(view);
+
+    // ✅ Timer 눌렀을 때 바로 시작 (이미 돌고 있으면 start 안 함)
+    if (view === "timer" && !timer.sessionActive) {
+      timer.startSession();
+    }
+  };
+
   return (
     <Box
       sx={(theme) => ({
@@ -37,7 +65,11 @@ export default function Sidebar({ isLoggedIn, onLogin, onLogout }) {
     >
       <Stack spacing={2} sx={{ height: "100%" }}>
         {/* Brand + Login */}
-        <Stack direction="row" alignItems="center" justifyContent="space-between">
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+        >
           <Stack direction="row" spacing={1} alignItems="center">
             <AutoAwesomeRoundedIcon sx={{ color: "primary.main" }} />
             <Typography sx={{ fontWeight: 900, color: "text.primary" }}>
@@ -46,18 +78,11 @@ export default function Sidebar({ isLoggedIn, onLogin, onLogout }) {
           </Stack>
 
           {isLoggedIn ? (
-            <Button
-              variant="outlined"
-              color="error"
-              onClick={onLogout}
-            >
+            <Button variant="outlined" color="error" onClick={onLogout}>
               Logout
             </Button>
           ) : (
-            <Button
-              variant="contained"
-              onClick={onLogin}
-            >
+            <Button variant="contained" onClick={onLogin}>
               Login
             </Button>
           )}
@@ -68,20 +93,19 @@ export default function Sidebar({ isLoggedIn, onLogin, onLogout }) {
         {/* Nav */}
         <List sx={{ px: 0 }}>
           {navItems.map((item) => {
-            const selected = item.label === "Home";
+            const selected = activeView === item.view;
 
             return (
               <ListItemButton
                 key={item.label}
                 selected={selected}
+                onClick={() => handleNavClick(item.view)}
                 sx={(theme) => ({
                   borderRadius: 2,
                   mb: 0.5,
-
                   "&.Mui-selected": {
                     bgcolor: alpha(theme.palette.primary.main, 0.16),
                   },
-
                   "&.Mui-selected:hover": {
                     bgcolor: alpha(theme.palette.primary.main, 0.24),
                   },
@@ -90,21 +114,61 @@ export default function Sidebar({ isLoggedIn, onLogin, onLogout }) {
                 <ListItemIcon
                   sx={{
                     minWidth: 38,
-                    color: selected
-                      ? "primary.main"
-                      : "text.secondary",
+                    color: selected ? "primary.main" : "text.secondary",
                   }}
                 >
                   {item.icon}
                 </ListItemIcon>
 
-                <ListItemText
-                  primary={item.label}
-                  primaryTypographyProps={{
-                    fontWeight: selected ? 700 : 600,
-                    color: selected ? "primary.main" : "text.primary",
+                {/* ✅ 오른쪽에 Chip 넣기 위해 row로 감싸기 */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    width: "100%",
+                    gap: 1,
                   }}
-                />
+                >
+                  <ListItemText
+                    primary={item.label}
+                    primaryTypographyProps={{
+                      fontWeight: selected ? 700 : 600,
+                      color: selected ? "primary.main" : "text.primary",
+                    }}
+                  />
+
+                  {/* ✅ Timer 옆에만 running time 표시 */}
+                  {item.view === "timer" && timer.sessionActive && (
+                    <Stack direction="row" alignItems="center" spacing={0.75}>
+                      <Chip
+                        size="small"
+                        label={timer.elapsedFormatted}
+                        sx={{
+                          height: 22,
+                          fontSize: 12,
+                          fontWeight: 800,
+                        }}
+                      />
+
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation(); // ✅ Timer 메뉴 클릭(start) 이벤트 방지
+                          timer.endSession(); // ✅ 멈추기(세션 종료 + 저장)
+                        }}
+                        sx={{
+                          p: 0.25,
+                          color: "text.secondary",
+                          "&:hover": { color: "error.main" },
+                        }}
+                        title="Stop"
+                      >
+                        <StopRoundedIcon fontSize="small" />
+                      </IconButton>
+                    </Stack>
+                  )}
+                </Box>
               </ListItemButton>
             );
           })}
