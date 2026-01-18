@@ -35,9 +35,29 @@ type SessionDraft = {
   duration: string | null; // formatted
 };
 
-export function useStudySessionTimer(
-  options: UseStudySessionTimerOptions = {}
-) {
+/** ✅ guest(로그인X) history 저장 키 */
+const LOCAL_HISTORY_KEY = "guest_study_sessions";
+
+function loadLocalSessions() {
+  try {
+    const raw = localStorage.getItem(LOCAL_HISTORY_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalSessions(list: any[]) {
+  localStorage.setItem(LOCAL_HISTORY_KEY, JSON.stringify(list));
+}
+
+function makeLocalId() {
+  return `local_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
+export function useStudySessionTimer(options: UseStudySessionTimerOptions = {}) {
   const { saveEndpoint = "/api/studySession", onSaved, canStart } = options;
 
   const [sessionData, setSessionData] = useState<SessionDraft>({
@@ -76,12 +96,9 @@ export function useStudySessionTimer(
     };
   }, [sessionActive]);
 
-  const setField = useCallback(
-    (name: "topic" | "description", value: string) => {
-      setSessionData((prev) => ({ ...prev, [name]: value }));
-    },
-    []
-  );
+  const setField = useCallback((name: "topic" | "description", value: string) => {
+    setSessionData((prev) => ({ ...prev, [name]: value }));
+  }, []);
 
   const startSession = useCallback(() => {
     setError(null);
@@ -132,13 +149,28 @@ export function useStudySessionTimer(
       const token =
         typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
+      // ✅ 로그인 안 했으면: localStorage에 저장하고 끝
       if (!token) {
-        setError("Please login to save your session.");
-        setSessionActive(false); // 세션은 멈추되
-        setSaving(false);
-        return;
+        const localItem = {
+          id: makeLocalId(),
+          topic: sessionData.topic,
+          description: sessionData.description,
+          startTime: sessionData.startTime.toISOString(),
+          endTime: endTime.toISOString(),
+          duration: formattedDuration,
+          createdAt: new Date().toISOString(),
+          _source: "local",
+        };
+
+        const prev = loadLocalSessions();
+        const next = [localItem, ...prev]; // 최신이 위로
+        saveLocalSessions(next);
+
+        onSaved?.(localItem);
+        return localItem;
       }
 
+      // ✅ 로그인 했으면: 서버 저장
       const payload: StudySessionPayload = {
         topic: sessionData.topic,
         description: sessionData.description,
@@ -151,7 +183,7 @@ export function useStudySessionTimer(
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });

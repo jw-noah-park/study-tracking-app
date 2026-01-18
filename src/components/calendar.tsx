@@ -17,15 +17,18 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { PickersDay, PickersDayProps } from "@mui/x-date-pickers/PickersDay";
 
-type DurationObj = {
-  hours?: number;
-  minutes?: number;
-  seconds?: number;
-};
+type StudySessionHistoryItem = {
+  _id?: string;
+  id?: string;
 
-type StudyHistoryEntry = {
-  date: string; // ISO string
-  total_duration: DurationObj;
+  topic: string;
+  description?: string;
+
+  startTime?: string; // ISO
+  endTime?: string;   // ISO
+  duration?: string;  // "HH:MM:SS"
+
+  createdAt?: string; // ISO
 };
 
 type StudySession = {
@@ -36,11 +39,33 @@ type StudySession = {
   duration: number; // seconds
 };
 
-function convertToSeconds(duration: DurationObj): number {
-  const hoursInSeconds = (duration.hours ?? 0) * 3600;
-  const minutesInSeconds = (duration.minutes ?? 0) * 60;
-  const seconds = duration.seconds ?? 0;
-  return hoursInSeconds + minutesInSeconds + seconds;
+const LOCAL_HISTORY_KEY = "guest_study_sessions";
+
+function parseDurationToSeconds(duration?: string) {
+  if (!duration) return 0;
+  const parts = duration.split(":").map((n) => Number(n));
+  if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) return 0;
+  const [hh, mm, ss] = parts;
+  return hh * 3600 + mm * 60 + ss;
+}
+
+/** ✅ 날짜 key를 “로컬 날짜” 기준으로 만들기 (timezone 밀림 방지) */
+function localDateKey(iso?: string) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/** ✅ modal 시간 표시도 로컬로 */
+function formatDateTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString();
 }
 
 function formatDuration(durationInSeconds: number): string {
@@ -57,15 +82,19 @@ function getDurationColor(durationInSeconds: number): string {
   return "error.main";
 }
 
-function formatDateTime(dateString: string): string {
-  const d = new Date(dateString);
-  return d.toISOString().replace("T", " ").split(".")[0];
+function loadLocalSessions(): StudySessionHistoryItem[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_HISTORY_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
 }
 
 /**
- * ✅ heatmap dot 버전 (텍스트 제거)
- * - grid 깨짐 / 잘림 / 요일 정렬 문제 거의 다 사라짐
- * - Tooltip으로 시간은 hover 때만 보여줌 (깔끔 + 정보 유지)
+ * ✅ heatmap dot 버전
  */
 function createDayWithDuration(secondsByDate: Map<string, number>) {
   return function DayWithDuration(props: PickersDayProps) {
@@ -113,16 +142,21 @@ function createDayWithDuration(secondsByDate: Map<string, number>) {
 
 const CalendarComponent: React.FC = () => {
   const [value, setValue] = useState<Dayjs>(dayjs());
-  const [history, setHistory] = useState<StudyHistoryEntry[]>([]);
+  const [sessionsAll, setSessionsAll] = useState<StudySessionHistoryItem[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sessions, setSessions] = useState<StudySession[]>([]);
 
+  /** ✅ 로그인 있으면 서버, 없으면 local */
   useEffect(() => {
-    const fetchHistory = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
-        if (!token) return;
+
+        if (!token) {
+          setSessionsAll(loadLocalSessions());
+          return;
+        }
 
         const response = await fetch("/api/studyHistory", {
           headers: { Authorization: `Bearer ${token}` },
@@ -130,51 +164,63 @@ const CalendarComponent: React.FC = () => {
 
         if (!response.ok) throw new Error("Failed to fetch history");
 
-        const data: StudyHistoryEntry[] = await response.json();
-        setHistory(data);
+        const data = await response.json();
+        const list = Array.isArray(data) ? data : data?.sessions || [];
+        setSessionsAll(list);
       } catch (error) {
         console.error("Error fetching history:", error);
       }
     };
 
-    fetchHistory();
+    fetchData();
+
+    /** ✅ local 저장이 추가되면 캘린더도 즉시 반영하고 싶으면 이벤트 사용 */
+    const onUpdated = () => {
+      const token = localStorage.getItem("token");
+      if (!token) setSessionsAll(loadLocalSessions());
+    };
+    window.addEventListener("studySessionsUpdated", onUpdated);
+
+    return () => window.removeEventListener("studySessionsUpdated", onUpdated);
   }, []);
 
+  /** ✅ 날짜별 총 seconds */
   const secondsByDate = useMemo(() => {
     const map = new Map<string, number>();
-    for (const entry of history) {
-      const key = entry.date.split("T")[0];
-      map.set(key, convertToSeconds(entry.total_duration));
+
+    for (const s of sessionsAll) {
+      const key = localDateKey(s.startTime || s.createdAt);
+      if (!key) continue;
+
+      const secs = parseDurationToSeconds(s.duration);
+      map.set(key, (map.get(key) || 0) + secs);
     }
+
     return map;
-  }, [history]);
+  }, [sessionsAll]);
 
   const DaySlot = useMemo(
     () => createDayWithDuration(secondsByDate),
     [secondsByDate]
   );
 
-  const openSessionsByDate = async (dateString: string) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
+  const openSessionsByDate = (dateString: string) => {
+    const list = sessionsAll.filter((s) => {
+      const key = localDateKey(s.startTime || s.createdAt);
+      return key === dateString;
+    });
 
-      const response = await fetch(
-        `/api/studySessionByDate?date=${dateString}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+    const mapped: StudySession[] = list.map((s) => ({
+      topic: s.topic || "",
+      description: s.description || "",
+      start_time: s.startTime || "",
+      end_time: s.endTime || "",
+      duration: parseDurationToSeconds(s.duration),
+    }));
 
-      if (!response.ok) throw new Error("Failed to fetch sessions");
-
-      const data: StudySession[] = await response.json();
-      setSessions(data);
-      setSelectedDate(dateString);
-      setIsModalOpen(true);
-    } catch (error) {
-      console.error("Error fetching sessions:", error);
-    }
+    setSessions(mapped);
+    setSelectedDate(dateString);
+    setIsModalOpen(true);
   };
 
   const handleChange = (newValue: Dayjs | null) => {
@@ -200,25 +246,20 @@ const CalendarComponent: React.FC = () => {
                 slots={{ day: DaySlot }}
                 sx={{
                   width: "100%",
-                  // ✅ 헤더
                   "& .MuiPickersCalendarHeader-label": {
                     fontWeight: 900,
                     fontSize: 20,
                   },
-
-
                   "& .MuiPickersDay-root": {
                     width: { xs: 44, sm: 56, md: 64 },
                     height: { xs: 44, sm: 56, md: 64 },
                     fontSize: { xs: 14, sm: 15, md: 16 },
                     borderRadius: 4,
                   },
-
-             
                   "& .MuiDayCalendar-weekDayLabel": {
                     fontWeight: 700,
                     fontSize: 15,
-                    width:63
+                    width: 63,
                   },
                 }}
               />
@@ -254,18 +295,9 @@ const CalendarComponent: React.FC = () => {
                   <Divider sx={{ my: 1 }} />
 
                   <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                    <Chip
-                      size="small"
-                      label={`Start: ${formatDateTime(s.start_time)}`}
-                    />
-                    <Chip
-                      size="small"
-                      label={`End: ${formatDateTime(s.end_time)}`}
-                    />
-                    <Chip
-                      size="small"
-                      label={`Duration: ${formatDuration(s.duration)}`}
-                    />
+                    <Chip size="small" label={`Start: ${formatDateTime(s.start_time)}`} />
+                    <Chip size="small" label={`End: ${formatDateTime(s.end_time)}`} />
+                    <Chip size="small" label={`Duration: ${formatDuration(s.duration)}`} />
                   </Stack>
                 </Box>
               ))}
@@ -273,7 +305,6 @@ const CalendarComponent: React.FC = () => {
           )}
         </Modal>
 
-        {/* Legend */}
         <Box sx={{ mt: 3 }}>
           <Typography sx={{ fontWeight: 900, mb: 1 }}>
             Time Duration Legend

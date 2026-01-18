@@ -7,6 +7,7 @@ import TimerHistoryPanel from "../components/timer/TimerHistory";
 import { Box, Container, Stack } from "@mui/material";
 import Sidebar from "../components/layout/Sidebar";
 import DashboardCard from "../components/layout/DashboardCard";
+import ToDo from "../components/todo"
 
 type View = "home" | "timer" | "todo";
 
@@ -57,9 +58,7 @@ export default function Home() {
                 {activeView === "timer" ? (
                   <TimerPanel /> // ✅ Timer 눌렀을 때: 타이머 컨트롤 UI
                 ) : activeView === "todo" ? (
-                  <Box sx={{ color: "text.secondary", fontSize: 14 }}>
-                    TODO panel coming soon.
-                  </Box> // ✅ TO-DO: 일단 아무것도 안함
+                  <ToDo />
                 ) : (
                   <TimerHistoryPanel /> // ✅ 기본(Home): 히스토리 보여주기
                 )}

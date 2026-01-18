@@ -46,9 +46,9 @@ export default function Sidebar({
     onSelectView(view);
 
     // ✅ Timer 눌렀을 때 바로 시작 (이미 돌고 있으면 start 안 함)
-    if (view === "timer" && !timer.sessionActive) {
-      timer.startSession();
-    }
+    // if (view === "timer" && !timer.sessionActive) {
+    //   timer.startSession();
+    // }
   };
 
   return (
